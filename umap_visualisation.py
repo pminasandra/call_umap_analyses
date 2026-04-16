@@ -2,6 +2,10 @@
 # 16 Apr 2026
 # pminasandra.github.io
 
+"""
+Helper functions to make some repetitive plots
+"""
+
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import numpy as np

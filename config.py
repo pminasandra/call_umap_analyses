@@ -2,10 +2,18 @@
 # 15 Apr 2026
 # pminasandra.github.io
 
+"""
+Flow and parameter configuration
+"""
+
+import os
+import os.path
+
+import numpy as np
 
 # DIRECTORIES
 P_DIR = os.getcwd() # project directory, by default set to current directory
-    
+
 AUDIO_IN = os.path.join(P_DIR, 'audio') # --> wav files here
 DATA = os.path.join(P_DIR, 'data')      # temporary storage of data
 INFO_FILE = os.path.join(DATA, 'info_file.csv')
@@ -46,7 +54,7 @@ WINDOW = 'hann' # name of window function
                 # each frame of audio is windowed by a window function.
                 # https://docs.scipy.org/doc/scipy/reference/signal.windows.html#module-scipy.signal.windows
 F_MIN = 50 #lower bound for frequency (in Hz) when generating Mel filterbank
-SPECTROGRAM_PARAMS_FILE = os.path.join(config.DATA, "spectrogram_parameters.json")
+SPECTROGRAM_PARAMS_FILE = os.path.join(DATA, "spectrogram_parameters.json")
 
 
 # UMAP METRICS
@@ -56,7 +64,7 @@ DISTANCE_METRIC = 'euclidean' # https://umap-learn.readthedocs.io/en/latest/para
 
 
 # PLOTTING
-DISTINCT_COLORS = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', 
+DISTINCT_COLORS = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
                       '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', 
                       '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', 
                       '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 

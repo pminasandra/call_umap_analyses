@@ -39,11 +39,11 @@ def get_nn_stats(df, nn_k=config.NUM_NEAREST_NEIGHBOURS, dropna=True):
     """
     df = df.copy()
     if dropna:
-        df = df.loc[df[LABEL_COL]!=NA_INDICATOR,:]
+        df = df.loc[df[config.LABEL_COL] != config.NEW_NA_INDICATOR,:]
 
     labels, embeddings = umap_clustering.labels_and_umap(df)
 
-    nn_stats = nn(embedding, np.asarray(labels), k=nn_k)
+    nn_stats = nn(embeddings, np.asarray(labels), k=nn_k)
 
     return nn_stats, nn_stats.get_S(), nn_stats.get_Snorm()
 
@@ -55,7 +55,7 @@ def make_nn_stat_visualisations(nn_stats, fname_base="nn"):
     nn_stats.plot_heat_S(vmin=0,       # lower end (for color scheme)
                          vmax=100,     # upper end (for color scheme)
                          center=50,    # center(for color scheme)
-                         cmap=sns.color_palette("Greens", as_cmap=True),# color scheme 
+                         cmap=sns.color_palette("Greens", as_cmap=True),# color scheme
                          cbar=None,    # show colorbar if True else don't
                          outname=f"{fname_base}_s_score.pdf")
 
@@ -102,7 +102,7 @@ def pairwise_analyses(embeddings, labels, fname_base="pw"):
                         outname=f"{fname_base}_within_without_disthists.pdf",
                         density=True)
 
-    sil_stats = sil(embedding, labels)
+    sil_stats = sil(embeddings, labels)
     sil_stats.plot_sil(outname=f"{fname_base}_silhouette_plot.pdf")
 
     return sil_stats.get_avrg_score()
