@@ -176,8 +176,8 @@ def compare_hdb_to_real(hdb_labels, real_labels):
     results = {}
     results['rand_index'] = calc_rand(cluster_labels, true_labels)
     results['adjusted_rand_index'] = adjusted_rand_score(cluster_labels, true_labels)
-    results['silhouette_score'] silhouette_score(embedding_data, cluster_labels))
-    results['n_clust'] = len(list(set(cluster_labels))))
+    results['silhouette_score'] silhouette_score(embedding_data, cluster_labels)
+    results['n_clust'] = len(list(set(cluster_labels)))
 
 # someone wants to add mutual information here? that one makes a lot more sense to me?
     return results
