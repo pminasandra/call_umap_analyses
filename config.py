@@ -48,7 +48,6 @@ WINDOW = 'hann' # name of window function
                 # each frame of audio is windowed by a window function.
                 # https://docs.scipy.org/doc/scipy/reference/signal.windows.html#module-scipy.signal.windows
 
-FMIN = 50 #lower bound for frequency (in Hz) when generating Mel filterbank
-
+F_MIN = 50 #lower bound for frequency (in Hz) when generating Mel filterbank
 
 SPECTROGRAM_PARAMS_FILE = os.path.join(config.DATA, "spectrogram_parameters.json")

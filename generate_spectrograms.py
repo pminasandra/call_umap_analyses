@@ -11,22 +11,15 @@ Initial pass, generation of spectrograms, sanity checks.
 
 import json
 import os
-from pathlib import Path
-import pickle
-import random
-import sys 
 import warnings
 
-import librosa
-import librosa.display
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import umap
 
 import config
 from functions.audio_functions import generate_mel_spectrogram, read_wavfile
-from functions.preprocessing_functions import calc_zscore, pad_spectro
+from functions.audio_functions import butter_bandpass_filter
+from functions.audio_functions import generate_stretched_mel_spectrogram
 
 
 def load_info_file(info_file=config.INFO_FILE):
@@ -37,24 +30,24 @@ def load_info_file(info_file=config.INFO_FILE):
         df = pd.read_csv(info_file, sep=",")
     else:
         warnings.warn(f"load_info_file: {info_file} invalid, generating default info file.")
-        audiofiles = os.listdir(AUDIO_IN)
+        audiofiles = os.listdir(config.AUDIO_IN)
         if len(audiofiles)>0:
             df = pd.DataFrame({'filename': [os.path.basename(x) for x in audiofiles],
                                     'label': ["unknown"] * len(audiofiles)})
     if config.KEEP_CALLS is not None:
-        df = df.loc[df[config.LABEL_COL].isin(KEEP_CALLS)]
+        df = df.loc[df[config.LABEL_COL].isin(config.KEEP_CALLS)]
 
 
-    audiofiles = df['filename'].values             
-    files_in_audio_directory = os.listdir(AUDIO_IN)
+    audiofiles = df['filename'].values
+    files_in_audio_directory = os.listdir(config.AUDIO_IN)
 
     # Are there any files that are in the info_file.csv, but not in AUDIO_IN?
     missing_files = list(set(audiofiles) - set(files_in_audio_directory))
     if len(missing_files)>0:
-        warnings.warn(f"{len(missing_files)} files with no matching audio in audio folder") 
-    
+        warnings.warn(f"{len(missing_files)} files with no matching audio in audio folder")
+
     return df
- 
+
 
 def load_audio_data(df, inplace=False):
     """
@@ -62,7 +55,8 @@ def load_audio_data(df, inplace=False):
     """
     if not inplace:
         df = df.copy()
-    audio_filepaths = [os.path.join(os.path.sep, AUDIO_IN,x) for x in audiofiles]
+    audiofiles = df['filename'].values
+    audio_filepaths = [os.path.join(os.path.sep, config.AUDIO_IN,x) for x in audiofiles]
     raw_audio,samplerate_hz = map(list,zip(*[read_wavfile(x) for x in audio_filepaths]))
 
     df['raw_audio'] = raw_audio
@@ -70,13 +64,15 @@ def load_audio_data(df, inplace=False):
 
     nrows = df.shape[0]
     df.dropna(subset=['raw_audio'], inplace=True)
-    
-    if nrows - df.shape[0] > 0:
-        warnings.warn(f"load_audio_data: dropped {nrows-df.shape[0]} rows due to missing/failed audio")
 
-    df['original_label'] = df[LABEL_COL]
-    df[config.LABEL_COL] = df[config.LABEL_COL].mask(df[config.LABEL_COL].isin(config.NA_DESCRIPTORS),
-                        config.NEW_NA_INDICATOR)
+    if nrows - df.shape[0] > 0:
+        warnings.warn(f"load_audio_data: dropped {nrows-df.shape[0]}\
+rows due to missing/failed audio")
+
+    df['original_label'] = df[config.LABEL_COL]
+    df[config.LABEL_COL] = df[config.LABEL_COL].mask(df[config.LABEL_COL]\
+                                .isin(config.NA_DESCRIPTORS),
+                            config.NEW_NA_INDICATOR)
     df[config.LABEL_COL] = df[config.LABEL_COL].astype(str)
 
     return df
@@ -92,7 +88,7 @@ def filter_inputs_by_duration(df, inplace=False):
 
     df = df.loc[df['duration_s'] >= config.MIN_DUR, :]
     df = df.loc[df['duration_s'] <= config.MAX_DUR, :]
-    
+
     return df
 
 
@@ -111,7 +107,7 @@ def save_spectrogram_info(n_mels, fft_win, fft_hop, window, f_min, f_max,
                 **kwargs
             }
     with open(fname, "w") as specfilejson:
-        json.dump(specfile, specfilejson)
+        json.dump(specs, specfilejson)
 
 
 def add_mel_spectrograms(df, n_mels=config.N_MELS,
@@ -138,7 +134,7 @@ def add_mel_spectrograms(df, n_mels=config.N_MELS,
                             # successive ffts (=hop_length)
 
     if f_max is None:
-        f_max = int(np.min(df['samplerate_hz'])/2) 
+        f_max = int(np.min(df['samplerate_hz'])/2)
         # upper bound for frequency (in Hz) when generating Mel filterbank
         # this is set to 0.5 times the samplerate (-> Nyquist rule)
         # If input files have different samplerates, the lowest samplerate is used
@@ -154,9 +150,8 @@ def add_mel_spectrograms(df, n_mels=config.N_MELS,
                                  fft_win = fft_win,
                                  fft_hop = fft_hop,
                                  f_max = f_max,
-                                 f_min = f_min), 
-                                 axis=1)
-
+                                 f_min = f_min),
+                            axis=1)
 
     df['spectrograms'] = spectrograms
 
@@ -207,9 +202,6 @@ def apply_bandpass_filter(df, lowcut, highcut, n_mels_filtered, inplace=False):
     with open(config.SPECTROGRAM_PARAMS_FILE, "w") as specs:
         json.dump(existing_specs, specs)
 
-    from functions.audio_functions import butter_bandpass_filter
-    
-    
     df['filtered_audio'] = df.apply(lambda row: butter_bandpass_filter(
                                                     data = row['raw_audio'],
                                                     lowcut = lowcut,
@@ -227,9 +219,9 @@ def apply_bandpass_filter(df, lowcut, highcut, n_mels_filtered, inplace=False):
                                                     window = es['window'],
                                                     fft_win = es['fft_win'],
                                                     fft_hop = es['fft_hop'],
-                                                    fmax = highcut,
-                                                    fmin = lowcut
-                                                    ), 
+                                                    f_max = highcut,
+                                                    f_min = lowcut
+                                                ),
                                             axis=1)
 
     return df
@@ -245,8 +237,7 @@ def apply_time_stretch(df, inplace=False):
     with open(config.SPECTROGRAM_PARAMS_FILE) as specs:
         es = json.load(specs)
 
-    from functions.audio_functions import generate_stretched_mel_spectrogram
-    
+
     max_duration = np.max(df['duration_s'])
 
     gsms = generate_stretched_mel_spectrogram
