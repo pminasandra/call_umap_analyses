@@ -9,16 +9,11 @@
 Evaluates clustering within UMAP projections
 """
 
-from scipy.stats import zscore
-from sklearn import metrics
 from sklearn.metrics import silhouette_score
 from sklearn.metrics.cluster import adjusted_rand_score
 import hdbscan
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import scipy
-import seaborn as sns
 
 import config
 
@@ -52,13 +47,13 @@ def rand_index_score(clusters, classes):
     """
     tp_plus_fp = scipy.special.comb(np.bincount(clusters), 2).sum()
     tp_plus_fn = scipy.special.comb(np.bincount(classes), 2).sum()
-    A = np.c_[(clusters, classes)]
-    tp = sum(scipy.special.comb(np.bincount(A[A[:, 0] == i, 1]), 2).sum() for i in set(clusters))
+    a = np.c_[(clusters, classes)]
+    tp = sum(scipy.special.comb(np.bincount(a[a[:, 0] == i, 1]), 2).sum() for i in set(clusters))
     fp = tp_plus_fp - tp
     fn = tp_plus_fn - tp
-    tn = scipy.special.comb(len(A), 2) - tp - fp - fn
+    tn = scipy.special.comb(len(a), 2) - tp - fp - fn
     return (tp + tn) / (tp + fp + fn + tn)
-    
+
 
 def calc_rand(pred, true):
     """
@@ -83,8 +78,8 @@ def calc_rand(pred, true):
         - Uses `numpy.unique(..., return_inverse=True)` to remap labels to
           consecutive integers.
     """
-    classnames, pred = np.unique(pred, return_inverse=True)
-    classnames, true = np.unique(true, return_inverse=True)
+    _, pred = np.unique(pred, return_inverse=True)
+    _, true = np.unique(true, return_inverse=True)
     return rand_index_score(pred, true)
 
 
@@ -124,7 +119,7 @@ def assign_cluster_labels(embedding,
     """
     if min_cluster_size is None:
         min_cluster_size=int(0.015*embedding.shape[0])
-        
+
     scan = hdbscan.HDBSCAN(
                         min_cluster_size=min_cluster_size,
                         cluster_selection_method=cluster_selection_method
@@ -136,26 +131,18 @@ def assign_cluster_labels(embedding,
 # FIXME df['HDBSCAN'] = hdb_labels   # add predicted cluster labels to dataframe
 
 
-def hdb_noise_mask(hdb_labels)
+def hdb_noise_mask(hdb_labels):
     """
     True for the datapoints labelled as noise (-1) by HDBSCAN
     """
 
     return hdb_labels == -1
 
-    # hdb_labels_no_noise = hdb_labels.copy()
-    # assigned = np.full((len(hdb_labels_no_noise),), False)
-    # assigned[np.where(hdb_labels_no_noise!=-1)[0]] = True
-    # 
-    # hdb_labels_no_noise = hdb_labels_no_noise[assigned] # the predicted cluster labels without noise datapoints
-    # df_no_noise = df.loc[assigned]                           # the dataframe without noise datapoints
-    # embedding_no_noise = embedding[assigned,:]               # the UMAP coordinates without noise datapoints
-
 
 # FIXME df.to_csv('HDBSCAN_data.csv', index=False)
 
 
-def compare_hdb_to_real(hdb_labels, real_labels):
+def compare_hdb_to_real(hdb_labels, real_labels, embedding):
     """
     Compare clustering labels against ground truth using standard metrics.
 
@@ -164,6 +151,8 @@ def compare_hdb_to_real(hdb_labels, real_labels):
             Cluster labels predicted by HDBSCAN.
         real_labels (array-like of shape (n_samples,)):
             Ground truth class labels.
+        embedding (np.ndarray):
+            List of UMAP values
 
     Returns:
         dict:
@@ -174,10 +163,10 @@ def compare_hdb_to_real(hdb_labels, real_labels):
             - 'n_clust' (int): Number of unique clusters.
     """
     results = {}
-    results['rand_index'] = calc_rand(cluster_labels, true_labels)
-    results['adjusted_rand_index'] = adjusted_rand_score(cluster_labels, true_labels)
-    results['silhouette_score'] silhouette_score(embedding_data, cluster_labels)
-    results['n_clust'] = len(list(set(cluster_labels)))
+    results['rand_index'] = calc_rand(hdb_labels, real_labels)
+    results['adjusted_rand_index'] = adjusted_rand_score(hdb_labels, real_labels)
+    results['silhouette_score'] = silhouette_score(embedding, hdb_labels)
+    results['n_clust'] = len(list(set(hdb_labels)))
 
 # someone wants to add mutual information here? that one makes a lot more sense to me?
     return results
@@ -199,10 +188,13 @@ def overall_cluster_comparison_analyses(df):
             - noise_fraction (float): Fraction of points labeled as noise.
     """
     labels, embeddings = labels_and_umap(df)
-    clustering = assign_cluster_labels(embedding)
-    evals_noise = compare_hdb_to_real(clustering, labels)
+    clustering = assign_cluster_labels(embeddings)
+    evals_noise = compare_hdb_to_real(clustering, labels, embeddings)
 
     unclustered = hdb_noise_mask(clustering) # a mask
-    evals_no_noise = compare_hdb_to_real(clustering[~unclustered], labels[~unclustered])
+    evals_no_noise = compare_hdb_to_real(clustering[~unclustered],
+                                            labels[~unclustered],
+                                            embeddings[~unclustered]
+                                            )
 
     return evals_noise, evals_no_noise, sum(unclustered)/len(unclustered)
