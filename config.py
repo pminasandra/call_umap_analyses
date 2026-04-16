@@ -53,3 +53,11 @@ SPECTROGRAM_PARAMS_FILE = os.path.join(config.DATA, "spectrogram_parameters.json
 N_DIM = 2 # 3 for 3D, 2 for 2D, 4 if you are an extraterrestrial capable of
           # higher-dimensional visualisation. (5 is right out)
 DISTANCE_METRIC = 'euclidean' # https://umap-learn.readthedocs.io/en/latest/parameters.html#metric
+
+
+# PLOTTING
+DISTINCT_COLORS = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', 
+                      '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', 
+                      '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', 
+                      '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 
+                      '#ffffff', '#000000']
