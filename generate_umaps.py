@@ -1,0 +1,87 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# Pranav Minasandra
+# 16 Apr 2026
+# pminasandra.github.io
+
+"""
+Generates a de-dimensionalisation of spectrogram inputs using UMAP.
+"""
+
+import time
+import umap
+
+import numpy as np
+import pandas as pd
+
+import config
+from functions.preprocessing_functions import calc_zscore, pad_spectro
+from functions.custom_dist_functions_umap import unpack_specs
+
+
+def preprocess_spectrograms(df):
+    """
+    z-transforms spectrogram values, does zero-padding for max length.
+    """
+    specs = df[config.SPEC_COL]
+    specs = [calc_zscore(s) for s in specs]
+
+    maxlen= np.max([spec.shape[1] for spec in specs])
+    flattened_specs = [pad_spectro(spec, maxlen).flatten() for spec in specs]
+    data = np.asarray(flattened_specs)
+
+    return data
+
+
+def project_to_umap_space(data,
+                            n_components=config.N_DIM,
+                            metric=config.DISTANCE_METRIC,
+                            min_dist=0,
+                            random_state=int(time.time())
+                         ):
+    """
+    Fits a reducer, and projects all spectrograms to a lower dimensional space.
+    Args:
+        data (array-like or pandas.DataFrame):
+            Input data to be projected into UMAP space. Shape should be
+            (n_samples, n_features).
+        n_components (int):
+            The dimensionality of the embedding (e.g., 2 for 2D, 3 for 3D).
+        metric (str or callable):
+            The distance metric to use for computing distances in the input space.
+            Common options include 'euclidean', 'manhattan', 'cosine', etc.
+        min_dist (float, optional):
+            The effective minimum distance between embedded points. Smaller values
+            result in tighter clustering, while larger values preserve more global
+            structure. Default is 0.
+        random_state (int, optional):
+            Seed for the random number generator to ensure reproducibility.
+            Defaults to the current system time.
+    Returns:
+        embedding (np.ndarray)
+        reducer (umap.UMAP)
+    """
+
+    reducer = umap.UMAP(n_components=n_components,
+                        metric=metric,
+                        min_dist=min_dist,
+                        random_state=random_state)
+
+    embedding = reducer.fit_transform(data)
+
+    return embedding, reducer
+
+
+def add_umap_data_to_df(df, data, inplace=False):
+    """
+    Helper, adds umap projections to main df
+    """
+    if not inplace:
+        df = df.copy()
+
+    n_dims = data.shape[1]
+    umap_labels = [f"UMAP{i+1}" for i in range(n_dims)]
+    df.loc[:, umap_labels] = data
+
+    return df

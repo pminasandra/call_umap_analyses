@@ -153,10 +153,10 @@ def add_mel_spectrograms(df, n_mels=config.N_MELS,
                                  f_min = f_min),
                             axis=1)
 
-    df['spectrograms'] = spectrograms
+    df[config.SPEC_COL] = spectrograms
 
     nrows = df.shape[0]
-    df.dropna(subset=['spectrograms'], inplace=True)
+    df.dropna(subset=[config.SPEC_COL], inplace=True)
     if nrows - df.shape[0] > 0:
         warnings.warn(
             f"add_mel_spectrograms: {nrows-df.shape[0]} rows dropped: failed" +
@@ -172,8 +172,8 @@ def apply_median_subtraction(df, inplace=False):
 
     if not inplace:
         df = df.copy()
-    df['spectrograms'] =\
-        [(spectrogram - np.median(spectrogram, axis=0)) for spectrogram in df['spectrograms']]
+    df[config.SPEC_COL] =\
+        [(spectrogram - np.median(spectrogram, axis=0)) for spectrogram in df[config.SPEC_COL]]
     return df
 
 
@@ -212,7 +212,7 @@ def apply_bandpass_filter(df, lowcut, highcut, n_mels_filtered, inplace=False):
 
     # create spectrograms from filtered audio
     es = existing_specs
-    df['spectrograms'] = df.apply(lambda row: generate_mel_spectrogram(
+    df[config.SPEC_COL] = df.apply(lambda row: generate_mel_spectrogram(
                                                     data = row['filtered_audio'],
                                                     rate = row['samplerate_hz'],
                                                     n_mels = es['n_mels_filtered'],
@@ -241,7 +241,7 @@ def apply_time_stretch(df, inplace=False):
     max_duration = np.max(df['duration_s'])
 
     gsms = generate_stretched_mel_spectrogram
-    df['spectrograms'] = df.apply(lambda row: gsms(
+    df[config.SPEC_COL] = df.apply(lambda row: gsms(
                                                row['raw_audio'],
                                                row['samplerate_hz'],
                                                row['duration_s'],
