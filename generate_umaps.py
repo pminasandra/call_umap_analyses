@@ -10,14 +10,12 @@ Generates a de-dimensionalisation of spectrogram inputs using UMAP.
 """
 
 import time
-import umap
 
 import numpy as np
-import pandas as pd
+import umap
 
 import config
 from functions.preprocessing_functions import calc_zscore, pad_spectro
-from functions.custom_dist_functions_umap import unpack_specs
 
 
 def preprocess_spectrograms(df):
@@ -85,3 +83,4 @@ def add_umap_data_to_df(df, data, inplace=False):
     df.loc[:, umap_labels] = data
 
     return df
+
