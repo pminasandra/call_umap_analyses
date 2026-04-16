@@ -61,3 +61,9 @@ DISTINCT_COLORS = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
                       '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', 
                       '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 
                       '#ffffff', '#000000']
+
+
+# ANALYSES METRICS
+
+## NEAREST NEIGHBOR
+NUM_NEAREST_NEIGHBOURS = 40
