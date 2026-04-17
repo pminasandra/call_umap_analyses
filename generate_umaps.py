@@ -39,7 +39,7 @@ def project_to_umap_space(data,
                             n_components=config.N_DIM,
                             metric=config.DISTANCE_METRIC,
                             min_dist=0,
-                            random_state=int(time.time())
+                            random_state=None
                          ):
     """
     Fits a reducer, and projects all spectrograms to a lower dimensional space.
@@ -64,6 +64,8 @@ def project_to_umap_space(data,
         reducer (umap.UMAP)
     """
 
+    if random_state is None:
+        random_state = int(time.time())
     reducer = umap.UMAP(n_components=n_components,
                         metric=metric,
                         min_dist=min_dist,

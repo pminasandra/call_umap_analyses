@@ -76,7 +76,7 @@ DISTINCT_COLORS = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 
 
 # ANALYSES METRICS
-N_REPEATS = 50 # Repeats of UMAP for metric evaluation with error rates
+N_REPEATS = 3 # Repeats of UMAP for metric evaluation with error rates
 
 ## NEAREST NEIGHBOR
 NUM_NEAREST_NEIGHBOURS = 40

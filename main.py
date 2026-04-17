@@ -27,7 +27,6 @@ if __name__ == "__main__":
 # First, load in audio files and create appropriate spectrograms
     df = generate_spectrograms.load_audio_data_and_features()
 
-
 # With a set of replicates, evaluate the values of standard metrics
     metrics = []
     FIRST = True
@@ -42,10 +41,10 @@ if __name__ == "__main__":
         if FIRST:
             FIRST = False
 
-        metrics = pd.DataFrame(metrics)
-        metrics = metrics.describe().loc[['mean', 'std']]
-        print(metrics)
-        metrics.to_csv(os.path.join(config.OUTPUT, "metrics.csv"))
+    metrics = pd.DataFrame(metrics)
+    metrics = metrics.describe().loc[['mean', 'std']]
+    print(metrics)
+    metrics.to_csv(os.path.join(config.OUTPUT, "metrics.csv"))
 
 # Make a {2 or 3}D plot of UMAP embeddings, coloured by labels
     labels, embeddings = umap_clustering.labels_and_umap(df)

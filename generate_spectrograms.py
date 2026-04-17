@@ -147,7 +147,7 @@ def add_mel_spectrograms(df, n_mels=config.N_MELS,
     save_spectrogram_info(n_mels, fft_win, fft_hop, window, f_min, f_max)
 
     spectrograms = df.apply(lambda row: generate_mel_spectrogram(
-                                data = row['raw_audio'],
+                                 data = row['raw_audio'],
                                  rate = row['samplerate_hz'],
                                  n_mels = n_mels,
                                  window = window,
@@ -156,7 +156,6 @@ def add_mel_spectrograms(df, n_mels=config.N_MELS,
                                  f_max = f_max,
                                  f_min = f_min),
                             axis=1)
-
     df[config.SPEC_COL] = spectrograms
 
     nrows = df.shape[0]

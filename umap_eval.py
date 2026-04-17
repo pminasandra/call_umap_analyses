@@ -52,17 +52,18 @@ def make_nn_stat_visualisations(nn_stats, fname_base="nn"):
     """
     Reproduce plots for nearest-neighbour overlap among 'true' classes
     """
+
     nn_stats.plot_heat_S(vmin=0,       # lower end (for color scheme)
                          vmax=100,     # upper end (for color scheme)
                          center=50,    # center(for color scheme)
                          cmap=sns.color_palette("Greens", as_cmap=True),# color scheme
                          cbar=None,    # show colorbar if True else don't
-                         outname=f"{fname_base}_s_score.pdf")
+                         outname=f"{config.OUTPUT}/{fname_base}_s_score.pdf")
 
     nn_stats.plot_heat_fold(center=1,    # center(for color scheme)
                             cmap=sns.diverging_palette(20, 145, as_cmap=True),
                             cbar=None,    # show colorbar if True else don't
-                            outname=f"{fname_base}_s_normalised.pdf")
+                            outname=f"{config.OUTPUT}/{fname_base}_s_normalised.pdf")
 
 
     nn_stats.plot_heat_Snorm(vmin=-13,     # lower end (for color scheme)
@@ -70,7 +71,7 @@ def make_nn_stat_visualisations(nn_stats, fname_base="nn"):
                              center=1,     # center(for color scheme)
                              cmap=sns.diverging_palette(240, 10, as_cmap=True),
                              cbar=None,    # show colorbar if True else don't
-                             outname=f"{fname_base}_s_normalised_logtrans.pdf")
+                             outname=f"{config.OUTPUT}/{fname_base}_s_normalised_logtrans.pdf")
 
 
 def pairwise_analyses(labels, embeddings, fname_base="pw"):
@@ -97,11 +98,11 @@ def pairwise_analyses(labels, embeddings, fname_base="pw"):
                         nbins=150,
                         nrows=7,
                         ncols=2,
-                        outname=f"{fname_base}_within_without_disthists.pdf",
+                        outname=f"{config.OUTPUT}/{fname_base}_within_without_disthists.pdf",
                         density=True)
 
     sil_stats = sil(embeddings, labels)
-    sil_stats.plot_sil(outname=f"{fname_base}_silhouette_plot.pdf")
+    sil_stats.plot_sil(outname=f"{config.OUTPUT}/{fname_base}_silhouette_plot.pdf")
 
     return sil_stats.get_avrg_score()
 

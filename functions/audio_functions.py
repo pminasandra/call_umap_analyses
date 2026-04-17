@@ -45,16 +45,16 @@ def generate_mel_spectrogram(data, rate, n_mels, window, fft_win , fft_hop, f_ma
         s = librosa.feature.melspectrogram(y = data ,
                                            sr = rate, 
                                            n_mels = n_mels , 
-                                           fmax = fmax, 
-                                           fmin = fmin,
+                                           fmax = f_max, 
+                                           fmin = f_min,
                                            n_fft = n_fft,
                                            hop_length = hop_length, 
                                            window = window, 
                                            win_length = n_fft)
 
         spectro = librosa.power_to_db(s, ref=np.max)
-    except:
-        print("Failed to generate spectrogram.")
+    except Exception as e:
+        print(f"Failed to generate spectrogram: {e}")
 
     return spectro
 

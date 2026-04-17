@@ -118,8 +118,8 @@ def rectangular_confusion_matrix(y_true,
             (cm, true_labels, pred_labels, fig, ax)
     """
 
-    y_true = np.asarray(y_true)
-    y_pred = np.asarray(y_pred)
+    y_true = np.asarray(y_true).astype(str)
+    y_pred = np.asarray(y_pred).astype(str)
 
     true_labels = np.unique(y_true)
     pred_labels = np.unique(y_pred)
