@@ -56,6 +56,10 @@ WINDOW = 'hann' # name of window function
 F_MIN = 50 #lower bound for frequency (in Hz) when generating Mel filterbank
 SPECTROGRAM_PARAMS_FILE = os.path.join(DATA, "spectrogram_parameters.json")
 
+## BANDPASS FILTER
+LOWCUT = 50.0              # lower bound in Hz (all signals below this bound will be removed)  
+HIGHCUT = 7000.0
+
 
 # UMAP METRICS
 N_DIM = 2 # 3 for 3D, 2 for 2D, 4 if you are an extraterrestrial capable of

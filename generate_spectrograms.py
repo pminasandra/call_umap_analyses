@@ -49,14 +49,14 @@ def load_info_file(info_file=config.INFO_FILE):
     return df
 
 
-def load_audio_data(df, inplace=False):
+def load_audio_data(df, audio_in, inplace=False):
     """
     Loads audio data pointed to by info_file
     """
     if not inplace:
         df = df.copy()
     audiofiles = df['filename'].values
-    audio_filepaths = [os.path.join(os.path.sep, config.AUDIO_IN,x) for x in audiofiles]
+    audio_filepaths = [os.path.join(audio_in ,x) for x in audiofiles]
     raw_audio,samplerate_hz = map(list,zip(*[read_wavfile(x) for x in audio_filepaths]))
 
     df['raw_audio'] = raw_audio
@@ -78,7 +78,11 @@ rows due to missing/failed audio")
     return df
 
 
-def filter_inputs_by_duration(df, inplace=False):
+def filter_inputs_by_duration(df,
+                    min_dur=config.MIN_DUR,
+                    max_dur=config.MAX_DUR,
+                    inplace=False
+                    ):
     """
     Drop calls that are too long.
     """
@@ -86,8 +90,8 @@ def filter_inputs_by_duration(df, inplace=False):
         df = df.copy()
     df['duration_s'] = [x.shape[0] for x in df['raw_audio']]/df['samplerate_hz']
 
-    df = df.loc[df['duration_s'] >= config.MIN_DUR, :]
-    df = df.loc[df['duration_s'] <= config.MAX_DUR, :]
+    df = df.loc[df['duration_s'] >= min_dur, :]
+    df = df.loc[df['duration_s'] <= max_dur, :]
 
     return df
 
@@ -177,7 +181,7 @@ def apply_median_subtraction(df, inplace=False):
     return df
 
 
-def apply_bandpass_filter(df, lowcut, highcut, n_mels_filtered, inplace=False):
+def apply_bandpass_filter(df, lowcut, highcut, n_mels_filtered=None, inplace=False):
     """
     Applies a bandpass filter to retain specific info only
     Args:
@@ -193,6 +197,9 @@ def apply_bandpass_filter(df, lowcut, highcut, n_mels_filtered, inplace=False):
     # First, update spec_params
     with open(config.SPECTROGRAM_PARAMS_FILE) as specs:
         existing_specs = json.load(specs)
+
+    if n_mels_filtered is None:
+        n_mels_filtered = existing_specs['n_mels']
 
     existing_specs = {**existing_specs,
                             "lowcut": lowcut,
@@ -252,4 +259,24 @@ def apply_time_stretch(df, inplace=False):
                                                max_duration
                                                ),
                                            axis=1)
+    return df
+
+
+def load_audio_data_and_features(audio_in=config.AUDIO_IN, info_file=config.INFO_FILE):
+    """
+    Wrapper, loads and generates appropriate spectrogram info
+    """
+
+    df = load_info_file(info_file)
+    df = load_audio_data(df, audio_in)
+    df = filter_inputs_by_duration(df)
+    df = add_mel_spectrograms(df)
+
+    if config.BANDPASS_FILTER:
+        df = apply_bandpass_filter(df, lowcut=config.LOWCUT, highcut=config.HIGHCUT)
+    if config.STRETCH:
+        df = apply_time_stretch(df)
+    if config.MEDIAN_SUB:
+        df = apply_median_subtraction(df)
+
     return df
