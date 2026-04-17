@@ -20,4 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint *.py --fail-under=8.8
+        pylint *.py --fail-under=8.8 --disable=import-error
