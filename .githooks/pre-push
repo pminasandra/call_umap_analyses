@@ -1,0 +1,16 @@
+#!/bin/sh
+
+tmpfile=$(mktemp)
+
+pylint src --fail-under=8.8 >"$tmpfile" 2>&1
+status=$?
+
+if [ $status -ne 0 ]; then
+    echo "Push blocked: pylint failed."
+    cat "$tmpfile"
+    rm "$tmpfile"
+    exit 1
+fi
+
+rm "$tmpfile"
+exit 0
