@@ -45,7 +45,7 @@ def get_nn_stats(df, nn_k=config.NUM_NEAREST_NEIGHBOURS, dropna=True):
 
     nn_stats = nn(embeddings, np.asarray(labels), k=nn_k)
 
-    return nn_stats, nn_stats.get_S(), nn_stats.get_Snorm()
+    return nn_stats, {"s": nn_stats.get_S(), "s_norm": nn_stats.get_Snorm()}
 
 
 def make_nn_stat_visualisations(nn_stats, fname_base="nn"):
@@ -73,17 +73,15 @@ def make_nn_stat_visualisations(nn_stats, fname_base="nn"):
                              outname=f"{fname_base}_s_normalised_logtrans.pdf")
 
 
-def pairwise_analyses(embeddings, labels, fname_base="pw"):
+def pairwise_analyses(labels, embeddings, fname_base="pw"):
     """
     Run pairwise distance and silhouette analyses on an embedding.
 
     Args:
-        embeddings (array-like of shape (n_samples, n_features)):
-            Embedding coordinates.
-
         labels (array-like of shape (n_samples,)):
             Labels associated with each sample.
-
+        embeddings (array-like of shape (n_samples, n_features)):
+            Embedding coordinates.
         fname_base (str, optional):
             Base filename used for saving output plots.
 
@@ -106,3 +104,14 @@ def pairwise_analyses(embeddings, labels, fname_base="pw"):
     sil_stats.plot_sil(outname=f"{fname_base}_silhouette_plot.pdf")
 
     return sil_stats.get_avrg_score()
+
+
+def make_umap_evaluation_plots(df):
+    """
+    Plotting wrapper, makes all relevant plots
+    """
+
+    nn_stats, _ = get_nn_stats(df)
+    make_nn_stat_visualisations(nn_stats)
+    labels, embeddings = umap_clustering.labels_and_umap(df)
+    pairwise_analyses(labels, embeddings)

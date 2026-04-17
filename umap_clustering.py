@@ -128,18 +128,12 @@ def assign_cluster_labels(embedding,
     return hdb_labels
 
 
-# FIXME df['HDBSCAN'] = hdb_labels   # add predicted cluster labels to dataframe
-
-
 def hdb_noise_mask(hdb_labels):
     """
     True for the datapoints labelled as noise (-1) by HDBSCAN
     """
 
     return hdb_labels == -1
-
-
-# FIXME df.to_csv('HDBSCAN_data.csv', index=False)
 
 
 def compare_hdb_to_real(hdb_labels, real_labels, embedding):
@@ -183,9 +177,7 @@ def overall_cluster_comparison_analyses(df):
     Returns:
         tuple:
             (evals_noise, evals_no_noise, noise_fraction), where:
-            - evals_noise (dict): Evaluation metrics on all points.
-            - evals_no_noise (dict): Evaluation metrics after removing noise points.
-            - noise_fraction (float): Fraction of points labeled as noise.
+            - evals (dict): Evaluation metrics on all points, with and without noise.
     """
     labels, embeddings = labels_and_umap(df)
     clustering = assign_cluster_labels(embeddings)
@@ -196,5 +188,7 @@ def overall_cluster_comparison_analyses(df):
                                             labels[~unclustered],
                                             embeddings[~unclustered]
                                             )
+    evals_no_noise = {f"{x}_no_noise": y for (x, y) in evals_no_noise.items()}
 
-    return evals_noise, evals_no_noise, sum(unclustered)/len(unclustered)
+    return {**evals_noise, **evals_no_noise,
+                "frac_noise": sum(unclustered)/len(unclustered)}

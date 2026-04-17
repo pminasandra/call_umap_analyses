@@ -17,9 +17,9 @@ P_DIR = os.getcwd() # project directory, by default set to current directory
 AUDIO_IN = os.path.join(P_DIR, 'audio') # --> wav files here
 DATA = os.path.join(P_DIR, 'data')      # temporary storage of data
 INFO_FILE = os.path.join(DATA, 'info_file.csv')
-
-if not os.path.isdir(DATA):
-    os.mkdir(DATA)
+OUTPUT = os.path.join(P_DIR, 'output')      # temporary storage of data
+os.makedirs(DATA, exist_ok=True)
+os.makedirs(OUTPUT, exist_ok=True)
 
 
 # GENERAL INFORMATION
@@ -76,6 +76,7 @@ DISTINCT_COLORS = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
 
 
 # ANALYSES METRICS
+N_REPEATS = 50 # Repeats of UMAP for metric evaluation with error rates
 
 ## NEAREST NEIGHBOR
 NUM_NEAREST_NEIGHBOURS = 40

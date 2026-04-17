@@ -18,16 +18,19 @@ import config
 from functions.preprocessing_functions import calc_zscore, pad_spectro
 
 
-def preprocess_spectrograms(df):
+def preprocess_spectrograms(df, preprocess=True):
     """
     z-transforms spectrogram values, does zero-padding for max length.
     """
     specs = df[config.SPEC_COL]
-    specs = [calc_zscore(s) for s in specs]
 
-    maxlen= np.max([spec.shape[1] for spec in specs])
-    flattened_specs = [pad_spectro(spec, maxlen).flatten() for spec in specs]
-    data = np.asarray(flattened_specs)
+    data = specs
+    if preprocess:
+        specs = [calc_zscore(s) for s in specs]
+        maxlen= np.max([spec.shape[1] for spec in specs])
+        flattened_specs = [pad_spectro(spec, maxlen).flatten() for spec in specs]
+        data = flattened_specs
+    data = np.asarray(data)
 
     return data
 
@@ -71,16 +74,26 @@ def project_to_umap_space(data,
     return embedding, reducer
 
 
-def add_umap_data_to_df(df, data, inplace=False):
+def add_umap_data_to_df(df, embedding, inplace=False):
     """
     Helper, adds umap projections to main df
     """
     if not inplace:
         df = df.copy()
 
-    n_dims = data.shape[1]
+    n_dims = embedding.shape[1]
     umap_labels = [f"UMAP{i+1}" for i in range(n_dims)]
-    df.loc[:, umap_labels] = data
+    df.loc[:, umap_labels] = embedding
 
     return df
 
+def perform_umap_reduction_and_store(df, preprocess=True):
+    """
+    Wrapper, performs a UMAP reduction and fits to all spectrograms, adds UMAP columns
+    to your df.
+    """
+    data = preprocess_spectrograms(df, preprocess=preprocess)
+    embeddings, _ = project_to_umap_space(data)
+    df = add_umap_data_to_df(df, embeddings)
+
+    return df
