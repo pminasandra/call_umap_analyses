@@ -57,7 +57,7 @@ F_MIN = 50 #lower bound for frequency (in Hz) when generating Mel filterbank
 SPECTROGRAM_PARAMS_FILE = os.path.join(DATA, "spectrogram_parameters.json")
 
 ## BANDPASS FILTER
-LOWCUT = 50.0              # lower bound in Hz (all signals below this bound will be removed)  
+LOWCUT = 50.0 # lower bound in Hz (all signals below this bound will be removed)
 HIGHCUT = 7000.0
 
 

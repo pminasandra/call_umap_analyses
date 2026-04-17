@@ -13,10 +13,10 @@ import seaborn as sns
 
 import config
 
-palette=config.DISTINCT_COLORS if config.DISTINCT_COLORS else "Set2"
+PALETTE=config.DISTINCT_COLORS if config.DISTINCT_COLORS else "Set2"
 def plot_umap_embedding(embedding,
                         labels=None,
-                        palette=palette,
+                        palette=PALETTE,
                         ax=None,
                         s=20,
                         alpha=0.8):

@@ -33,7 +33,7 @@ if __name__ == "__main__":
     FIRST = True
 
     for i in range(config.N_REPEATS):
-        print("Estimating UMAP metrics calculation for" + 
+        print("Estimating UMAP metrics calculation for" +
                     f" repeat {i+1} of {config.N_REPEATS}.")
         df = generate_umaps.perform_umap_reduction_and_store(df, preprocess=True)
         estimates = umap_clustering.overall_cluster_comparison_analyses(df)
