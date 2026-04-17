@@ -1,0 +1,11 @@
+hdbscan
+librosa
+matplotlib
+numba
+numpy
+pandas
+scikit_learn
+scipy
+seaborn
+soundfile
+umap_learn
